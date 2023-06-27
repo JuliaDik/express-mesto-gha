@@ -1,6 +1,6 @@
 const User = require('../models/user');
 
-const getUsers = (res) => {
+const getUsers = (req, res) => {
   // обращение к БД: находим всех пользователей
   User.find({})
     // ответ от БД: все пользователи
@@ -13,10 +13,10 @@ const getUsers = (res) => {
 };
 
 const getUserById = (req, res) => {
-  // параметр запроса: извлекаем id из url-адреса
-  const { id } = req.params;
+  // параметр запроса: извлекаем id пользователя из url-адреса
+  const { userId } = req.params;
   // обращение к БД: находим пользователя по id
-  User.findById(id)
+  User.findById(userId)
     // ответ от БД: пользователь по конкретному id
     .then((user) => {
       res.send(user);
