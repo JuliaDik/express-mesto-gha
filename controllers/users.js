@@ -40,8 +40,38 @@ const createUser = (req, res) => {
     });
 };
 
+const updateProfile = (req, res) => {
+  // тело запроса: извлекаем данные об имени пользователя и информации о себе
+  const { name, about } = req.body;
+  // обращение к БД: находим пользователя по id и обновляем имя и информацию о себе
+  User.findByIdAndUpdate(req.user._id, { name, about })
+    // ответ от БД: пользователь с обновленным именем и информацией о себе
+    .then((user) => {
+      res.send(user);
+    })
+    .catch(() => {
+      res.status(500).send({ message: 'Произошла ошибка' });
+    });
+};
+
+const updateAvatar = (req, res) => {
+  // тело запроса: извлекаем данные об аватаре пользователя
+  const { avatar } = req.body;
+  // обращение к БД: находим пользователя по id и обновляем аватар
+  User.findByIdAndUpdate(req.user._id, { avatar })
+    // ответ от БД: пользователь с обновленным аватаром
+    .then((user) => {
+      res.send(user);
+    })
+    .catch(() => {
+      res.status(500).send({ message: 'Произошла ошибка' });
+    });
+};
+
 module.exports = {
   getUsers,
   getUserById,
   createUser,
+  updateProfile,
+  updateAvatar,
 };
