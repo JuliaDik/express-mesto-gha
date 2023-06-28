@@ -75,7 +75,7 @@ const updateUserInfo = (req, res) => {
   // id пользователя
   const userId = req.user._id;
   // обращение к БД: находим пользователя по id и обновляем его имя и информацию о нем
-  User.findByIdAndUpdate(userId, { name, about }, { new: true })
+  User.findByIdAndUpdate(userId, { name, about }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) {
         return res
@@ -105,7 +105,7 @@ const updateUserAvatar = (req, res) => {
   // id пользователя
   const userId = req.user._id;
   // обращение к БД: находим пользователя по id и обновляем аватар
-  User.findByIdAndUpdate(userId, { avatar }, { new: true })
+  User.findByIdAndUpdate(userId, { avatar }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) {
         return res
