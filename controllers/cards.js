@@ -114,7 +114,11 @@ const dislikeCard = (req, res) => {
   const userId = req.user._id;
   // обращение к БД: находим карточку по id
   // и удаляем из массива лайков id пользователя, убравшего лайк
-  Card.findByIdAndUpdate(cardId, { $pull: { likes: userId } }, { new: true })
+  Card.findByIdAndUpdate(
+    cardId,
+    { $pull: { likes: userId } },
+    { new: true },
+  )
     .then((card) => {
       if (!card) {
         return res
