@@ -5,6 +5,9 @@ const mongoose = require('mongoose');
 
 const { PORT = 3000 } = process.env;
 
+// Запрашиваемый ресурс не найден
+const NOT_FOUND_ERROR = 404;
+
 const app = express();
 
 const usersRouter = require('./routes/users');
@@ -28,6 +31,9 @@ app.use((req, res, next) => {
 // обработка роутов
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
+app.use('/*', (req, res) => {
+  res.status(NOT_FOUND_ERROR).send({ message: 'Запрошен несуществующий роут' });
+});
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
