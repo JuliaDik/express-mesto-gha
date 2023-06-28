@@ -50,14 +50,14 @@ const deleteCardById = (req, res) => {
   // параметр запроса: извлекаем id карточки из url-адреса
   const { cardId } = req.params;
   // обращение к БД: находим карточку по id
-  Card.findById(cardId)
+  Card.findByIdAndDelete(cardId)
     .then((card) => {
       if (!card) {
         return res
           .status(NOT_FOUND_ERROR)
           .send({ message: 'Карточка с указанным _id не найдена' });
       }
-      return res.status(200).send({ message: 'Карточка удалена' });
+      return res.send(card);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
