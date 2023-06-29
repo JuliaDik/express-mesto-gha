@@ -5,8 +5,7 @@ const mongoose = require('mongoose');
 
 const { PORT = 3000 } = process.env;
 
-// Запрашиваемый ресурс не найден
-const NOT_FOUND_ERROR = 404;
+const { NOT_FOUND_ERROR } = require('./utils/constants');
 
 const app = express();
 

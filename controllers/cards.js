@@ -1,10 +1,5 @@
 const Card = require('../models/card');
-// Запрос от клиента к веб-серверу составлен некорректно
-const BAD_REQUEST_ERROR = 400;
-// Запрашиваемый ресурс не найден
-const NOT_FOUND_ERROR = 404;
-// Внутренняя ошибка сервера, запрос не удалось выполнить
-const INTERNAL_SERVER_ERROR = 500;
+const { BAD_REQUEST_ERROR, NOT_FOUND_ERROR, INTERNAL_SERVER_ERROR } = require('../utils/constants');
 
 const getCards = (req, res) => {
   // обращение к БД: находим все карточки
@@ -93,7 +88,7 @@ const likeCard = (req, res) => {
       return res.send(card);
     })
     .catch((err) => {
-      if (err.name === 'CastError' || err.name === 'ValidationError') {
+      if (err.name === 'CastError') {
         return res
           .status(BAD_REQUEST_ERROR)
           .send({
@@ -128,7 +123,7 @@ const dislikeCard = (req, res) => {
       return res.send(card);
     })
     .catch((err) => {
-      if (err.name === 'CastError' || err.name === 'ValidationError') {
+      if (err.name === 'CastError') {
         return res
           .status(BAD_REQUEST_ERROR)
           .send({ message: 'Переданы некорректные данные для снятия лайка' });
