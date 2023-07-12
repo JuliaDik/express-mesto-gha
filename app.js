@@ -40,6 +40,19 @@ app.use('/*', (req, res) => {
   res.status(NOT_FOUND_ERROR).send({ message: 'Запрошен несуществующий роут' });
 });
 
+// централизованная обработка ошибок
+app.use((err, req, res, next) => {
+  // если у ошибки нет статуса, выставляем 500
+  // 500 - внутренняя ошибка сервера (запрос не удалось выполнить)
+  const { statusCode = 500, message } = err;
+
+  res
+    .status(statusCode)
+    // отправляем сообщение в зависимости от статуса
+    .send({ message: statusCode === 500 ? 'На сервере произошла ошибка' : message });
+  next();
+});
+
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
 });
