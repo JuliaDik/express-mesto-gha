@@ -2,6 +2,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const { login, createUser } = require('./controllers/users');
 
 const { PORT = 3000 } = process.env;
 
@@ -27,6 +28,8 @@ app.use((req, res, next) => {
 
   next();
 });
+app.post('/signin', login);
+app.post('/signup', createUser);
 // обработка роутов
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
