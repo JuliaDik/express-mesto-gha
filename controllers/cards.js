@@ -1,5 +1,6 @@
 const Card = require('../models/card');
 const { BAD_REQUEST_ERROR, NOT_FOUND_ERROR, INTERNAL_SERVER_ERROR } = require('../utils/constants');
+const ForbiddenError = require('../errors/forbidden-err');
 
 const getCards = (req, res) => {
   // обращение к БД: находим все карточки
@@ -51,6 +52,9 @@ const deleteCardById = (req, res) => {
         return res
           .status(NOT_FOUND_ERROR)
           .send({ message: 'Карточка с указанным _id не найдена' });
+      }
+      if (card.owner !== req.user._id) {
+        throw new ForbiddenError('Нельзя удалять карточки других пользователей');
       }
       return res.send(card);
     })
