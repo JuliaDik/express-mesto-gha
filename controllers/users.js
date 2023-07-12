@@ -3,6 +3,8 @@ const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('../utils/constants');
 const User = require('../models/user');
 const { BAD_REQUEST_ERROR, NOT_FOUND_ERROR, INTERNAL_SERVER_ERROR } = require('../utils/constants');
+const NotFoundError = require('../errors/not-found-err');
+const BadRequestError = require('../errors/bad-request-err');
 
 const getUsers = (req, res) => {
   // обращение к БД: находим всех пользователей
@@ -15,6 +17,27 @@ const getUsers = (req, res) => {
       res
         .status(INTERNAL_SERVER_ERROR)
         .send({ message: 'На сервере произошла ошибка' });
+    });
+};
+
+const getCurrentUser = (req, res, next) => {
+  // id пользователя
+  const userId = req.user._id;
+  // обращение к БД: найти пользователя по id
+  User.findById(userId)
+    .then((user) => {
+      if (!user) {
+        throw new NotFoundError('Пользователь по указанному _id не найден');
+      }
+      // ответ от БД: текущий пользователь по переданному _id
+      res.send(user);
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new BadRequestError('Передан некорректный _id пользователя'));
+        return;
+      }
+      next(err);
     });
 };
 
@@ -176,6 +199,7 @@ const login = (req, res) => {
 
 module.exports = {
   getUsers,
+  getCurrentUser,
   getUserById,
   createUser,
   updateUserInfo,
