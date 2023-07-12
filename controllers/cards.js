@@ -4,114 +4,94 @@ const BadRequestError = require('../errors/bad-request-err');
 const ForbiddenError = require('../errors/forbidden-err');
 
 const getCards = (req, res, next) => {
-  // обращение к БД: находим все карточки
+  // ОБРАЩЕНИЕ К БД: найти все карточки
   Card.find({})
-    .then((cards) => {
-      // ответ от БД: все карточки из БД
-      res.send(cards);
-    })
-    .catch((err) => {
-      next(err);
-    });
+    // ОТВЕТ ОТ БД: все карточки
+    .then((cards) => res.send(cards))
+    .catch(next);
 };
 
 const createCard = (req, res, next) => {
-  // тело запроса: извлекаем полученные данные о карточке
+  // ТЕЛО ЗАПРОСА: получаем name и link карточки
   const { name, link } = req.body;
-  // временное решение авторизации: id пользователя (автора карточки)
   const userId = req.user._id;
-  // обращение к БД: добавляем новую карточку,
-  // включающую id пользователя (автора карточки)
+  // ОБРАЩЕНИЕ К БД: добавить новую карточку с указанием id пользователя-автора карточки
   Card.create({ name, link, owner: userId })
-    .then((card) => {
-      // ответ от БД: новая карточка с переданными в теле запроса name, link
-      res.send(card);
-    })
+    // ОТВЕТ ОТ БД: новая карточка
+    .then((card) => res.send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new BadRequestError('Переданы некорректные данные при создании карточки'));
-        return;
+        return next(new BadRequestError('Переданы некорректные данные при создании карточки'));
       }
-      next(err);
+      return next(err);
     });
 };
 
 const deleteCardById = (req, res, next) => {
-  // параметр запроса: извлекаем id карточки из url-адреса
+  // ПАРАМЕТРЫ ЗАПРОСА: получаем id карточки из url-адреса
   const { cardId } = req.params;
-  // обращение к БД: находим карточку по id
+  // ОБРАЩЕНИЕ К БД: найти карточку по id и удалить
   Card.findByIdAndDelete(cardId)
     .then((card) => {
       if (!card) {
         throw new NotFoundError('Карточка с указанным _id не найдена');
       }
-      if (card.owner !== req.user._id) {
-        throw new ForbiddenError('Нельзя удалять карточки других пользователей');
+      if (card.owner.toString() !== req.user._id) {
+        throw new ForbiddenError('Нельзя удалить карточку другого пользователя');
       }
       return res.send(card);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new BadRequestError('Передан некорректный _id карточки'));
-        return;
+        return next(new BadRequestError('Передан некорректный _id карточки'));
       }
-      next(err);
+      return next(err);
     });
 };
 
 const likeCard = (req, res, next) => {
-  // параметр запроса: извлекаем id карточки из url-адреса
+  // ПАРАМЕТРЫ ЗАПРОСА: получаем id карточки из url-адреса
   const { cardId } = req.params;
-  // id пользователя
   const userId = req.user._id;
-  // обращение к БД: находим карточку по id
-  // и добавляем в массив лайков id пользователя, поставившего лайк
-  Card.findByIdAndUpdate(
-    cardId,
-    { $addToSet: { likes: userId } },
-    { new: true },
-  )
+  // ОБРАЩЕНИЕ К БД:
+  // найти карточку по id
+  // добавить в массив лайков id пользователя-автора лайка
+  Card.findByIdAndUpdate(cardId, { $addToSet: { likes: userId } }, { new: true })
     .then((card) => {
       if (!card) {
         throw new NotFoundError('Передан несуществующий _id карточки');
       }
-      // ответ от БД: карточка с обновленным массивом лайков (+userId)
+      // ОТВЕТ ОТ БД: карточка с обновленным массивом лайков (+userId)
       return res.send(card);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new BadRequestError('Переданы некорректные данные для постановки лайка'));
-        return;
+        return next(new BadRequestError('Переданы некорректные данные для постановки лайка'));
       }
-      next(err);
+      return next(err);
     });
 };
 
 const dislikeCard = (req, res, next) => {
-  // параметр запроса: извлекаем id карточки из url-адреса
+  // ПАРАМЕТРЫ ЗАПРОСА: получаем id карточки из url-адреса
   const { cardId } = req.params;
-  // id пользователя
   const userId = req.user._id;
-  // обращение к БД: находим карточку по id
-  // и удаляем из массива лайков id пользователя, убравшего лайк
-  Card.findByIdAndUpdate(
-    cardId,
-    { $pull: { likes: userId } },
-    { new: true },
-  )
+  // ОБРАЩЕНИЕ К БД:
+  // найти карточку по id
+  // удалить из массива лайков id пользователя-автора дизлайка
+  Card.findByIdAndUpdate(cardId, { $pull: { likes: userId } }, { new: true })
     .then((card) => {
       if (!card) {
         throw new NotFoundError('Передан несуществующий _id карточки');
       }
-      // ответ от БД: карточка с обновленным массивом лайков (-userId)
+      // ОТВЕТ ОТ БД: карточка с обновленным массивом лайков (-userId)
       return res.send(card);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new BadRequestError('Переданы некорректные данные для снятия лайка'));
-        return;
+        return next(new BadRequestError('Переданы некорректные данные для снятия лайка'));
       }
-      next(err);
+      return next(err);
     });
 };
 
