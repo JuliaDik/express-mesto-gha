@@ -20,15 +20,6 @@ mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
 // чтение потока JSON-данных из тела запроса
 app.use(bodyParser.json());
 
-// временное решение авторизации (id пользователя)
-app.use((req, res, next) => {
-  req.user = {
-    _id: '649c9dbbf5c57bdc76e405f0',
-  };
-
-  next();
-});
-
 // роут регистрации
 app.post('/signup', createUser);
 
