@@ -3,26 +3,28 @@ const { JWT_SECRET } = require('../utils/constants');
 const UnauthorizedError = require('../errors/unauthorized-err');
 
 const auth = (req, res, next) => {
-  // извлекаем токен из кук
-  const { token } = req.cookies;
-
-  if (!token) {
-    next(new UnauthorizedError('Необходима авторизация'));
-    return;
-  }
-
-  let payload;
   try {
-    // верифицируем токен
-    // сравниваем текущий токен с токеном, выданным при авторизации
-    payload = jwt.verify(token, JWT_SECRET);
+    // извлекаем токен из кук
+    const { token } = req.cookies;
+
+    if (!token) {
+      throw new UnauthorizedError('Необходима авторизация');
+    }
+
+    let payload;
+    try {
+      // верифицируем токен
+      // сравниваем текущий токен с токеном, выданным при авторизации
+      payload = jwt.verify(token, JWT_SECRET);
+    } catch (err) {
+      throw new UnauthorizedError('Необходима авторизация');
+    }
     // добавить пейлоуд токена в объект запроса
     req.user = payload;
+    next();
   } catch (err) {
-    next(new UnauthorizedError('Необходима авторизация'));
-    return;
+    next(err);
   }
-  next();
 };
 
 module.exports = auth;

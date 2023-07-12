@@ -2,7 +2,9 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const { Joi, celebrate } = require('celebrate');
+const cookieParser = require('cookie-parser');
+const helmet = require('helmet');
+const { errors, Joi, celebrate } = require('celebrate');
 const URL_REGEX = require('./utils/constants');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
@@ -14,6 +16,9 @@ const { PORT = 3000 } = process.env;
 
 const app = express();
 
+// связанная с защитой настройка заголовков HTTP
+app.use(helmet());
+
 // взаимодействие с базой данных
 mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
   useNewUrlParser: true,
@@ -21,6 +26,9 @@ mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
 
 // чтение потока JSON-данных из тела запроса
 app.use(bodyParser.json());
+
+// чтение кук
+app.use(cookieParser());
 
 // роут регистрации
 app.post('/signup', celebrate({
@@ -54,6 +62,9 @@ app.use('/cards', cardsRouter);
 app.use('/*', (req, res, next) => {
   next(new NotFoundError('Запрашиваемый роут не найден'));
 });
+
+// обработка ошибок celebrate
+app.use(errors());
 
 // централизованная обработка ошибок
 app.use((err, req, res, next) => {
