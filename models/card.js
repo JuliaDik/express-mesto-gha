@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const URL_REGEX = require('../utils/constants');
 
 // схема карточки
 const cardSchema = new mongoose.Schema({
@@ -12,7 +11,7 @@ const cardSchema = new mongoose.Schema({
   link: {
     type: String,
     required: true,
-    validate: (url) => URL_REGEX.test(url),
+    validate: (url) => /https?:\/\/(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z0-9-._~:/?#[\]@!$&'()*+,;=]+#?/.test(url),
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
