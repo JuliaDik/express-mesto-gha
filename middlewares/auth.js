@@ -16,12 +16,12 @@ const auth = (req, res, next) => {
     // верифицируем токен
     // сравниваем текущий токен с токеном, выданным при авторизации
     payload = jwt.verify(token, JWT_SECRET);
+    // добавить пейлоуд токена в объект запроса
+    req.user = payload;
   } catch (err) {
     next(new UnauthorizedError('Необходима авторизация'));
     return;
   }
-  // добавить пейлоуд токена в объект запроса
-  req.user = payload;
   next();
 };
 
