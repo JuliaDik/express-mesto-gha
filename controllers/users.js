@@ -1,4 +1,6 @@
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const { JWT_SECRET } = require('../utils/constants');
 const User = require('../models/user');
 const { BAD_REQUEST_ERROR, NOT_FOUND_ERROR, INTERNAL_SERVER_ERROR } = require('../utils/constants');
 
@@ -138,10 +140,45 @@ const updateUserAvatar = (req, res) => {
     });
 };
 
+const login = (req, res) => {
+  // тело запроса: извлекаем почту и пароль пользователя
+  const { email, password } = req.body;
+
+  // обращение к БД: найти пользователя по учетным данным (почта и пароль)
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      // после успешной авторизации (почта и пароль правильные)
+      // создать токен
+      const token = jwt.sign(
+        { _id: user._id },
+        JWT_SECRET,
+        // период действия токена (7 дней)
+        { expiresIn: '7d' },
+      );
+      // ответ от БД: сохраненный в куках браузера токен пользователя
+      // защита токена от XSS-атак
+      res
+        .cookie('jwt', token, {
+          maxAge: 3600000 * 24 * 7,
+          httpOnly: true,
+          // браузер посылает куки,
+          // только если запрос сделан с того же домена
+          sameSite: true,
+        })
+        .send({ token });
+    })
+    .catch((err) => {
+      res
+        .status(401)
+        .send({ message: err.message });
+    });
+};
+
 module.exports = {
   getUsers,
   getUserById,
   createUser,
   updateUserInfo,
   updateUserAvatar,
+  login,
 };
