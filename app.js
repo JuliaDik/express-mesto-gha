@@ -1,17 +1,16 @@
 // основная логика сервера
 const express = require('express');
-const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
 const { login, createUser } = require('./controllers/users');
+const auth = require('./middlewares/auth');
+const usersRouter = require('./routes/users');
+const cardsRouter = require('./routes/cards');
+const { NOT_FOUND_ERROR } = require('./utils/constants');
 
 const { PORT = 3000 } = process.env;
 
-const { NOT_FOUND_ERROR } = require('./utils/constants');
-
 const app = express();
-
-const usersRouter = require('./routes/users');
-const cardsRouter = require('./routes/cards');
 
 // взаимодействие с базой данных
 mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
@@ -20,6 +19,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
 
 // чтение потока JSON-данных из тела запроса
 app.use(bodyParser.json());
+
 // временное решение авторизации (id пользователя)
 app.use((req, res, next) => {
   req.user = {
@@ -28,11 +28,23 @@ app.use((req, res, next) => {
 
   next();
 });
-app.post('/signin', login);
+
+// роут регистрации
 app.post('/signup', createUser);
-// обработка роутов
+
+// роут авторизации
+app.post('/signin', login);
+
+// защита авторизацией всех маршрутов, кроме регистрации и авторизации
+app.use(auth);
+
+// роут пользователя
 app.use('/users', usersRouter);
+
+// роут карточек
 app.use('/cards', cardsRouter);
+
+// несуществующий роут
 app.use('/*', (req, res) => {
   res.status(NOT_FOUND_ERROR).send({ message: 'Запрошен несуществующий роут' });
 });
