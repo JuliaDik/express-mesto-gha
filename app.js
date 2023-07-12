@@ -6,7 +6,7 @@ const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
-const { NOT_FOUND_ERROR } = require('./utils/constants');
+const NotFoundError = require('./errors/not-found-err');
 
 const { PORT = 3000 } = process.env;
 
@@ -36,8 +36,8 @@ app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
 
 // несуществующий роут
-app.use('/*', (req, res) => {
-  res.status(NOT_FOUND_ERROR).send({ message: 'Запрошен несуществующий роут' });
+app.use('/*', (req, res, next) => {
+  next(new NotFoundError('Запрашиваемый роут не найден'));
 });
 
 // централизованная обработка ошибок
