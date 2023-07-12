@@ -1,3 +1,4 @@
+const bcrypt = require('bcryptjs');
 const User = require('../models/user');
 const { BAD_REQUEST_ERROR, NOT_FOUND_ERROR, INTERNAL_SERVER_ERROR } = require('../utils/constants');
 
@@ -43,12 +44,25 @@ const getUserById = (req, res) => {
 
 const createUser = (req, res) => {
   // тело запроса: извлекаем полученные данные о пользователе
-  const { name, about, avatar } = req.body;
+  const {
+    name,
+    about,
+    avatar,
+    email,
+    password,
+  } = req.body;
+  bcrypt.hash(password, 10)
   // обращение к БД: добавляем нового пользователя
-  User.create({ name, about, avatar })
+    .then((hash) => User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
+    }))
     .then((user) => {
       // ответ от БД: новый пользователь с переданными в теле запроса name, about, avatar
-      res.send(user);
+      res.send(user._id, name, about, avatar, email);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
