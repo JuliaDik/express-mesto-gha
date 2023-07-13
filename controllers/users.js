@@ -65,7 +65,8 @@ const createUser = (req, res, next) => {
       name, about, avatar, email, password: hash,
     }))
     // ОТВЕТ ОТ БД: новый пользователь (возвращается все, кроме пароля)
-    .then((user) => res.send({
+    // сервер успешно обработал запрос и создал новый ресурс
+    .then((user) => res.status(201).send({
       name: user.name,
       about: user.about,
       avatar: user.avatar,

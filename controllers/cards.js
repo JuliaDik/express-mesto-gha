@@ -18,7 +18,8 @@ const createCard = (req, res, next) => {
   // ОБРАЩЕНИЕ К БД: добавить новую карточку с указанием id пользователя-автора карточки
   Card.create({ name, link, owner: userId })
     // ОТВЕТ ОТ БД: новая карточка
-    .then((card) => res.send(card))
+    // сервер успешно обработал запрос и создал новый ресурс
+    .then((card) => res.status(201).send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         return next(new BadRequestError('Переданы некорректные данные при создании карточки'));
@@ -31,7 +32,7 @@ const deleteCardById = (req, res, next) => {
   // ПАРАМЕТРЫ ЗАПРОСА: получаем id карточки из url-адреса
   const { cardId } = req.params;
   // ОБРАЩЕНИЕ К БД: найти карточку по id и удалить
-  Card.findByIdAndDelete(cardId)
+  Card.findById(cardId)
     .then((card) => {
       if (!card) {
         throw new NotFoundError('Карточка с указанным _id не найдена');
@@ -39,8 +40,9 @@ const deleteCardById = (req, res, next) => {
       if (card.owner.toString() !== req.user._id) {
         throw new ForbiddenError('Нельзя удалить карточку другого пользователя');
       }
-      return res.send(card);
+      return card.deleteOne();
     })
+    .then(() => res.send({ message: 'Карточка удалена' }))
     .catch((err) => {
       if (err.name === 'CastError') {
         return next(new BadRequestError('Передан некорректный _id карточки'));
